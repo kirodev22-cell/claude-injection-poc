@@ -1,0 +1,33 @@
+name: 01 Trigger Detector
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+
+jobs:
+  detect:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect trigger
+        run: |
+          echo "=== @claude TRIGGER DETECTED ==="
+          echo "Comment author: ${{ github.event.comment.user.login }}"
+          echo "Comment author type: ${{ github.event.comment.user.type }}"
+          echo "Comment ID: ${{ github.event.comment.id }}"
+          echo "Issue number: ${{ github.event.issue.number }}"
+          echo "Repo: ${{ github.repository }}"
+          echo "===================================="
+
+      - name: Post verification comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '**PoC: @claude trigger detected**\n\nThe action fired successfully from the @claude comment.\n\n_Verification comment posted by the trigger detector workflow._'
+            });
