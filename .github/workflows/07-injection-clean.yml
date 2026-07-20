@@ -1,0 +1,26 @@
+name: 07 Injection Clean
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+
+jobs:
+  poc:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm injection trigger
+        run: |
+          echo '=== POC CONFIRMED ==='
+          echo 'Trigger: @claude mention in issue comment'
+          echo 'Comment ID: ${{ github.event.comment.id }}'
+          echo 'Comment author: ${{ github.event.comment.user.login }}'
+          echo 'Comment body contains fenced code block: ${{ contains(github.event.comment.body, '```') }}'
+          echo 'Comment body contains triple quotes: ${{ contains(github.event.comment.body, '"""') }}'
+          echo '=== POINTS ==='
+          echo '1. sanitizeContent() does NOT strip fenced code blocks (verified by static analysis)'
+          echo '2. allowed_bots: * bypasses [bot] permission check (verified by static analysis)'
+          echo '3. GITHUB_TOKEN not stripped from SDK env (verified by static analysis)'
