@@ -1,6 +1,5 @@
 name: 02 Injection PoC
-on:
-  issue_comment:
+on: issue_comment:
     types: [created]
 
 permissions:
@@ -16,8 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Claude Code Action (PoC: fenced code block injection)
+      - name: Run Claude Code Action (PoC: injection test)
         uses: anthropics/claude-code-action@v1
         with:
-          allowed_bots: "*"
+          allowed_bots: '*'
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
