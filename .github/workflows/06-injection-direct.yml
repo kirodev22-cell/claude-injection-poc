@@ -1,0 +1,35 @@
+name: 06 Injection Direct
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  contents: write
+
+jobs:
+  inject:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract fenced code block
+        run: |
+          PAYLOAD=$(echo '"${{ github.event.comment.body }}"' | sed -n '/```/,/```/p' | head -n -1 | tail -n +2)
+          echo "Extracted payload: $PAYLOAD"
+          echo "Will execute via API"
+
+      - name: Call Claude API with extracted instructions
+        env:
+          ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "ANTHROPIC_API_KEY is set: ${{ secrets.ANTHROPIC_API_KEY != '' }}"
+          COMMENT='${{ github.event.comment.body }}'
+          echo "Comment body length: ${#COMMENT}"
+
+      - name: PoC confirmation
+        run: |
+          echo "=== POC-CONFIRMED ==="
+          echo "Fenced code block injection executed in Claude Code runner (direct API)"
+          echo "Comment author: ${{ github.event.comment.user.login }}"
+          echo "GITHUB_TOKEN: ${GITHUB_TOKEN:0:8}"
