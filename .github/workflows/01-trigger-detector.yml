@@ -1,5 +1,7 @@
 name: 01 Trigger Detector
-on: issue_comment:
+
+on:
+  issue_comment:
     types: [created]
 
 permissions:
@@ -12,7 +14,7 @@ jobs:
     steps:
       - name: Detect trigger
         run: |
-          echo '=== @claude TRIGGER DETECTED ===''
+          echo '=== @claude TRIGGER DETECTED ==='
           echo 'Comment author: ${{ github.event.comment.user.login }}''
           echo 'Repo: ${{ github.repository }}''
           echo '===============================''
