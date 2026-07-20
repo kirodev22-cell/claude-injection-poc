@@ -1,0 +1,24 @@
+name: 04 Injection Final
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: write
+  id-token: write
+
+jobs:
+  claude:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Claude Code Action (PoC: injection test)
+        uses: anthropics/claude-code-action@v1
+        with:
+          allowed_bots: '*'
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
