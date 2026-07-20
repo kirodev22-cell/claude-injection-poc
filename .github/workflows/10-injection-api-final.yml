@@ -1,4 +1,4 @@
-name: 08 Injection API
+name: 10 Injection API Final
 
 on:
   issue_comment:
